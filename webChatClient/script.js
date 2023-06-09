@@ -6,6 +6,14 @@ $(document).ready(function () {
     .configureLogging(signalR.LogLevel.Information)
     .build();
 
+
+  // Generating key
+  const key = CryptoJS.enc.Utf8.parse(generateRandomKey());
+  const iv = CryptoJS.enc.Utf8.parse(generateRandomKey());
+
+  //DEBUG: display key in document
+  displayKey(key);
+
   connection.start().then(() => {
     $('#viewMessages').append("<p class='message'>SignalR Connected!</p>");
   }).catch((err) => {
@@ -26,23 +34,6 @@ $(document).ready(function () {
     // Apply fade-in effect to the new message
     messageElement.fadeIn(500);
   });
-
-
-
-  // Generating key
-  var keyLength = 16; // Length of the key in bytes (128 bits)
-  var key = CryptoJS.enc.Utf8.parse(generateRandomKey(keyLength));
-  var iv = CryptoJS.enc.Utf8.parse(generateRandomKey(keyLength));
-  // Display the key on the website
-  const keyElement = document.createElement("div");
-  keyElement.textContent = "Encryption Key: " + key;
-  keyElement.style.position = "fixed";
-  keyElement.style.bottom = "10px";
-  keyElement.style.left = "10px";
-  document.body.appendChild(keyElement);
-
-
-
 
 
   // Modal
@@ -81,11 +72,11 @@ $(document).ready(function () {
 
 /**
  * Function to generate a random key
- * @param {number} length
+ * @param {number} length - Length of the key in bytes (default: 16 bytes = 128 bits)
  * @returns {string} key
  * 
 */
-function generateRandomKey(length) {
+function generateRandomKey(length = 16) {
   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   let key = "";
   for (let x = 0; x < length; x++) {
@@ -192,4 +183,20 @@ function decryptMessage(encryptedMessage, encKey, encIv) {
   console.log("Message decrypted: " + decryptedMessage);
 
   return decryptedMessage;
+}
+
+
+/**
+ * Function to display the encryption key on the website
+ * @param {string} key
+ * @returns {HTMLElement} keyElement
+  */
+function displayKey(key) {
+  const keyElement = document.createElement("div");
+  keyElement.textContent = "Encryption Key: " + key;
+  keyElement.style.position = "fixed";
+  keyElement.style.bottom = "10px";
+  keyElement.style.left = "10px";
+  document.body.appendChild(keyElement);
+  return keyElement;
 }
