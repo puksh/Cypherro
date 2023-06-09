@@ -27,34 +27,7 @@ $(document).ready(function () {
     messageElement.fadeIn(500);
   });
 
-  function decryptMessage(encryptedMessage, encKey, encIv) {
 
-    console.log("Decrypting message...");
-
-    // Convert the key and iv strings to WordArray objects
-    const key = CryptoJS.enc.Utf8.parse(encKey);
-    const iv = CryptoJS.enc.Utf8.parse(encIv);
-
-    // Decrypt the message using AES
-    const decrypted = CryptoJS.AES.decrypt(encryptedMessage, key, { iv: iv });
-
-    // Convert the decrypted WordArray to a UTF-8 string
-    const decryptedMessage = decrypted.toString(CryptoJS.enc.Utf8);
-
-    console.log("Message decrypted: " + decryptedMessage);
-
-    return decryptedMessage;
-  }
-
-  // Function to generate a random key
-  function generateRandomKey(length) {
-    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    let key = "";
-    for (let x = 0; x < length; x++) {
-      key += characters.charAt(Math.floor(Math.random() * characters.length));
-    }
-    return key;
-  }
 
   // Generating key
   var keyLength = 16; // Length of the key in bytes (128 bits)
@@ -68,14 +41,7 @@ $(document).ready(function () {
   keyElement.style.left = "10px";
   document.body.appendChild(keyElement);
 
-  // Function to encrypt the message
-  function encryptMessage(message, key, iv) {
-    // Encrypt the message using AES
-    const encrypted = CryptoJS.AES.encrypt(message, key, { iv: iv });
 
-    // Return the encrypted message as a base64-encoded string
-    return encrypted.toString();
-  }
 
 
 
@@ -94,7 +60,7 @@ $(document).ready(function () {
     if (senderName) {
       modal.fadeOut(function () {
         $("#senderName").text(senderName);
-        sendMessageWithSender(senderName, key);
+        sendMessageWithSender(senderName, key, iv);
       });
     }
   };
@@ -109,47 +75,121 @@ $(document).ready(function () {
   });
 
 
-  // Function to send message with sender
-  function sendMessageWithSender(senderName, secretKey) {
-    $("#sendBtn").click(function () {
-      const message = $('#inputSend').val();
 
-      // Check if the message is empty
-      if (message.trim() === "") {
-        // Display an error message or take appropriate action
-        console.error("Message is empty. Please enter a message.");
-        return;
-      }
-
-      // Encrypt the message
-      const encryptedMessage = encryptMessage(message, secretKey, iv);
-
-      const messageData = {
-        Sender: senderName,
-        EncryptedContent: encryptedMessage,
-        Key: secretKey.toString(CryptoJS.enc.Utf8),
-        Iv: iv.toString(CryptoJS.enc.Utf8)
-      };
-      console.log(messageData);
-
-      $.ajax({
-        url: 'http://localhost:7157/api/sendMessage',
-        type: 'post',
-        data: JSON.stringify(messageData),
-        headers: {
-          "Content-Type": 'application/json',
-        },
-        dataType: 'json',
-        beforeSend: function (xhr) {
-        },
-        success: function (response) {
-        },
-        error: function (xhr, status, error) {
-          console.error("AJAX request failed:", error);
-        }
-      });
-
-      $('#inputSend').val("");
-    });
-  }
 });
+
+
+/**
+ * Function to generate a random key
+ * @param {number} length
+ * @returns {string} key
+ * 
+*/
+function generateRandomKey(length) {
+  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let key = "";
+  for (let x = 0; x < length; x++) {
+    key += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+  return key;
+}
+
+/**
+ * Function to encrypt the message
+ * @param {string} message
+ * @param {string} key
+ * @param {string} iv
+ * @returns {string} encryptedMessage
+ *  
+*/
+
+function encryptMessage(message, key, iv) {
+  // Encrypt the message using AES
+  const encrypted = CryptoJS.AES.encrypt(message, key, { iv: iv });
+
+  // Return the encrypted message as a base64-encoded string
+  return encrypted.toString();
+}
+
+
+
+
+/**
+ * Function to send a message
+ * @param {string} senderName
+ * @param {string} secretKey
+ * 
+*/
+function sendMessageWithSender(senderName, secretKey, iv) {
+  $("#sendBtn").click(function () {
+    const message = $('#inputSend').val();
+
+    // Check if the message is empty
+    if (message.trim() === "") {
+      // Display an error message or take appropriate action
+      console.error("Message is empty. Please enter a message.");
+      return;
+    }
+
+    // Encrypt the message
+    const encryptedMessage = encryptMessage(message, secretKey, iv);
+
+    const messageData = {
+      Sender: senderName,
+      EncryptedContent: encryptedMessage,
+      Key: secretKey.toString(CryptoJS.enc.Utf8),
+      Iv: iv.toString(CryptoJS.enc.Utf8)
+    };
+    console.log(messageData);
+
+    $.ajax({
+      url: 'http://localhost:7157/api/sendMessage',
+      type: 'post',
+      data: JSON.stringify(messageData),
+      headers: {
+        "Content-Type": 'application/json',
+      },
+      dataType: 'json',
+      beforeSend: function (xhr) {
+      },
+      success: function (response) {
+      },
+      error: function (xhr, status, error) {
+        console.error("AJAX request failed:", error);
+      }
+    });
+
+    $('#inputSend').val("");
+  });
+}
+
+
+
+
+
+
+/**
+ * Function to decrypt the message
+ * @param {string} encryptedMessage
+ * @param {string} encKey
+ * @param {string} encIv 
+ * @returns {string} decryptedMessage
+ */
+function decryptMessage(encryptedMessage, encKey, encIv) {
+
+  console.log("Decrypting message...");
+
+  // Convert the key and iv strings to WordArray objects
+  const key = CryptoJS.enc.Utf8.parse(encKey);
+  const iv = CryptoJS.enc.Utf8.parse(encIv);
+
+  // Decrypt the message using AES
+  const decrypted = CryptoJS.AES.decrypt(encryptedMessage, key, { iv: iv });
+
+  // Convert the decrypted WordArray to a UTF-8 string
+  const decryptedMessage = decrypted.toString(CryptoJS.enc.Utf8);
+
+  console.log("Message decrypted: " + decryptedMessage);
+
+  return decryptedMessage;
+}
