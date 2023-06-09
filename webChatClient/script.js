@@ -92,6 +92,13 @@ function setSenderName(value) {
 }
 
 /**
+ * remove the sender name from localStorage
+*/
+function removeSenderName() {
+  localStorage.removeItem("sender-name");
+}
+
+/**
  *  get the sender name from localStorage
  * @returns {string} senderName
 */
