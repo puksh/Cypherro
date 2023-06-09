@@ -60,13 +60,7 @@ function generateRandomKey(length) {
 var keyLength = 16; // Length of the key in bytes (128 bits)
 var key = CryptoJS.enc.Utf8.parse(generateRandomKey(keyLength));
 var iv = CryptoJS.enc.Utf8.parse(generateRandomKey(keyLength));
-// Display the key on the website
-const keyElement = document.createElement("div");
-keyElement.textContent = "Encryption Key: " + key;
-keyElement.style.position = "fixed";
-keyElement.style.bottom = "10px";
-keyElement.style.left = "10px";
-document.body.appendChild(keyElement);
+
 
 // Function to encrypt the message
 function encryptMessage(message, key, iv) {
@@ -77,7 +71,9 @@ function encryptMessage(message, key, iv) {
   return encrypted.toString();
 }
 
-
+// Display the key on the page
+const keyElement = document.getElementById('keyElement');
+  keyElement.textContent = 'Encryption Key: ' + key;
 
 // Modal
 const modal = $("#myModal");
@@ -152,4 +148,14 @@ function sendMessageWithSender(senderName, secretKey) {
     $('#inputSend').val("");
   });
  }
+});
+const keyElement = document.getElementById("keyElement");
+keyElement.addEventListener("click", () => {
+  navigator.clipboard.writeText(key)
+    .then(() => {
+      alert("Encryption Key copied to clipboard!");
+    })
+    .catch((error) => {
+      console.error("Failed to copy Encryption Key:", error);
+    });
 });

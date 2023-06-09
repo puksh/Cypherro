@@ -226,7 +226,7 @@
   
     color: #333;
   
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Google Sans', sans-serif;
     font-size: 20px;
     font-weight: 600;
   
@@ -236,4 +236,17 @@
   }
   .menu__item:hover {
     background-color: #CFD8DC;
+  }
+
+  /* Cypher key */
+
+  .key-element {
+    position: sticky;
+    bottom: 10px;
+    width: 252px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;  
+    user-select: none !important; /* Prevent text selection */ 
+    -moz-user-select: none !important; /* Prevent text selection in Firefox */
+    cursor: pointer !important; /* Show cursor as pointer */
   }
