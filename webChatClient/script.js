@@ -14,26 +14,7 @@ $(document).ready(function () {
   //DEBUG: display key in document
   displayKey(key);
 
-  connection.start().then(() => {
-    $('#viewMessages').append("<p class='message'>SignalR Connected!</p>");
-  }).catch((err) => {
-    return console.error(err.toString());
-  });
-
-  connection.on('newMessage', (m) => {
-    const decryptedMessage = decryptMessage(m.EncryptedContent, m.Key, m.Iv);
-
-    const messageElement = $("<p>")
-      .addClass("message")
-      .addClass(m.Sender === senderName ? "userMessage" : "")
-      .text(m.Sender + ": " + decryptedMessage)
-      .hide(); // Initially hide the message
-
-    $('#viewMessages').append(messageElement);
-
-    // Apply fade-in effect to the new message
-    messageElement.fadeIn(500);
-  });
+  initConnectionEvents(connection);
 
 
   // Modal
@@ -68,6 +49,34 @@ $(document).ready(function () {
 
 
 });
+
+function initConnectionEvents(connection, senderName = "Anonymous") {
+
+  // Start the connection
+  // This event is triggered when the connection is established
+  connection.start().then(() => {
+    $('#viewMessages').append("<p class='message'>SignalR Connected!</p>");
+  }).catch((err) => {
+    return console.error(err.toString());
+  });
+
+
+  // Receive new message
+  // This event is triggered when a new message is received
+  connection.on('newMessage', (m) => {
+    const decryptedMessage = decryptMessage(m.EncryptedContent, m.Key, m.Iv);
+
+    const messageElement = $("<p>")
+      .addClass("message")
+      .addClass(m.Sender === senderName ? "userMessage" : "")
+      .text(`${m.Sender}: ${decryptedMessage}`);
+
+    $('#viewMessages').append(messageElement);
+
+    // Apply fade-in effect to the new message
+    messageElement.fadeIn(500);
+  });
+}
 
 
 /**
