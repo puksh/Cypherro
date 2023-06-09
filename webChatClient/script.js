@@ -13,7 +13,7 @@ $(document).ready(function () {
 
     //DEBUG: display key in document
     displayKeyAndAddEventListener(key);
-
+    addEventToSendMessage(key, iv);
     initConnectionEvents(connection, getSenderName());
   });
 
@@ -145,12 +145,13 @@ function encryptMessage(message, key, iv) {
 
 /**
  * Function to send a message
- * @param {string} senderName
  * @param {string} secretKey
+ * @param {string} iv
+ * @param {JQuery Object} sendBtn
  * 
 */
-function sendMessageWithSender(senderName, secretKey, iv) {
-  $("#sendBtn").click(function () {
+function addEventToSendMessage(secretKey, iv, sendBtn = $("#sendBtn"), ) {
+  sendBtn.click(function () {
     const message = $('#inputSend').val();
 
     // Check if the message is empty
