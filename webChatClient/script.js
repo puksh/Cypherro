@@ -12,7 +12,7 @@ $(document).ready(function () {
     const iv = CryptoJS.enc.Utf8.parse(generateRandomKey());
 
     //DEBUG: display key in document
-    displayKey(key);
+    displayKeyAndAddEventListener(key);
 
     initConnectionEvents(connection, getSenderName());
   });
@@ -143,9 +143,6 @@ function encryptMessage(message, key, iv) {
   return encrypted.toString();
 }
 
-
-
-
 /**
  * Function to send a message
  * @param {string} senderName
@@ -197,9 +194,6 @@ function sendMessageWithSender(senderName, secretKey, iv) {
 
 
 
-
-
-
 /**
  * Function to decrypt the message
  * @param {string} encryptedMessage
@@ -232,12 +226,19 @@ function decryptMessage(encryptedMessage, encKey, encIv) {
  * @param {string} key
  * @returns {HTMLElement} keyElement
   */
-function displayKey(key) {
+function displayKeyAndAddEventListener(key) {
   const keyElement = document.createElement("div");
   keyElement.textContent = "Encryption Key: " + key;
   keyElement.style.position = "fixed";
   keyElement.style.bottom = "10px";
   keyElement.style.left = "10px";
   document.body.appendChild(keyElement);
+
+
+  $(keyElement).on("click", function () {
+    navigator.clipboard.writeText(key);
+    console.log("Copied key to clipboard.: "+ key);
+  });
+
   return keyElement;
 }
