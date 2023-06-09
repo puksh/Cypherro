@@ -17,15 +17,7 @@ $(document).ready(function () {
     initConnectionEvents(connection, getSenderName());
   });
 
-  // senderNameInput.keydown(function (event) {
-  //   if (event.keyCode === 13) {
-  //     event.preventDefault();
-  //     setSenderName();
-  //   }
-  // });
-
-
-
+  addEnterEventListenerToInput();
 });
 
 /**
@@ -235,4 +227,13 @@ function displayKeyAndAddEventListener(key) {
   });
 
   return keyElement;
+}
+
+
+function addEnterEventListenerToInput(inputEl = $('#inputSend'), sendBtn = $("#sendBtn")) {
+  inputEl.on('keydown', function (e) {
+    if (e.which == 13 || e.keyCode == 13 || e.key === "Enter") {
+      sendBtn.click();
+    }
+  })
 }
