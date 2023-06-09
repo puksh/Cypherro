@@ -1,56 +1,39 @@
 $(document).ready(function () {
-
-  // Receive and display new messages
-  const connection = new signalR.HubConnectionBuilder()
-    .withUrl("http://localhost:7157/api/")
-    .configureLogging(signalR.LogLevel.Information)
-    .build();
-
-
-  // Generating key
-  const key = CryptoJS.enc.Utf8.parse(generateRandomKey());
-  const iv = CryptoJS.enc.Utf8.parse(generateRandomKey());
-
-  //DEBUG: display key in document
-  displayKey(key);
-
-  initConnectionEvents(connection);
+  showSenderNameModalIfNoSenderName().then(function () {
+    // Receive and display new messages
+    const connection = new signalR.HubConnectionBuilder()
+      .withUrl("http://localhost:7157/api/")
+      .configureLogging(signalR.LogLevel.Information)
+      .build();
 
 
-  // Modal
-  const modal = $("#myModal");
-  const span = $(".close");
-  const senderNameInput = $("#senderNameInput");
-  let senderName = ""; // Store the sender name
+    // Generating key
+    const key = CryptoJS.enc.Utf8.parse(generateRandomKey());
+    const iv = CryptoJS.enc.Utf8.parse(generateRandomKey());
 
-  // Show modal with fade-in effect on page load
-  modal.fadeIn();
+    //DEBUG: display key in document
+    displayKey(key);
 
-  // Set sender name and close modal with fade-out effect when 'Set' button is clicked
-  const setSenderName = function () {
-    senderName = senderNameInput.val(); // Update the sender name
-    if (senderName) {
-      modal.fadeOut(function () {
-        $("#senderName").text(senderName);
-        sendMessageWithSender(senderName, key, iv);
-      });
-    }
-  };
-
-  $("#setSenderNameBtn").click(setSenderName);
-
-  senderNameInput.keydown(function (event) {
-    if (event.keyCode === 13) {
-      event.preventDefault();
-      setSenderName();
-    }
+    initConnectionEvents(connection, getSenderName());
   });
+
+  // senderNameInput.keydown(function (event) {
+  //   if (event.keyCode === 13) {
+  //     event.preventDefault();
+  //     setSenderName();
+  //   }
+  // });
 
 
 
 });
 
-function initConnectionEvents(connection, senderName = "Anonymous") {
+/**
+ * Function to initialize the connection events
+ * @param {HubConnection} connection
+ * @param {string} senderName defaults to the saved sender name in localStorage
+*/
+function initConnectionEvents(connection, senderName = getSenderName()) {
 
   // Start the connection
   // This event is triggered when the connection is established
@@ -78,6 +61,55 @@ function initConnectionEvents(connection, senderName = "Anonymous") {
   });
 }
 
+
+
+
+function showSenderNameModalIfNoSenderName(modal = $("#myModal")) { 
+  return new Promise(function (resolve, reject) {
+    if (getSenderName() === null) {
+      const senderNameSetBtn = modal.find('#setSenderNameBtn');
+      modal.show();
+
+      //escape multiple event bindings
+      senderNameSetBtn.off("click");
+      senderNameSetBtn.on("click", function (event) {
+        updateSenderName(modal);
+        resolve();
+        //fade out modal
+        modal.fadeOut();
+      });
+   } else {
+      resolve();
+    }
+  });
+}
+
+function updateSenderName(modal) {
+  const senderName = modal.find("#senderNameInput").val();
+  if (senderName) {
+    setSenderName(senderName);
+  }
+}
+
+/**
+ * save the sender name in localStorage
+ * @param {string} value
+*/
+function setSenderName(value) {
+  localStorage.setItem("sender-name", value);
+}
+
+/**
+ *  get the sender name from localStorage
+ * @returns {string} senderName
+*/
+function getSenderName() {
+  const sender = localStorage.getItem("sender-name");
+  if (sender === null) { 
+    console.error("Sender name in localStorage is not set.");
+  }
+  return sender;
+}
 
 /**
  * Function to generate a random key
@@ -135,7 +167,7 @@ function sendMessageWithSender(senderName, secretKey, iv) {
     const encryptedMessage = encryptMessage(message, secretKey, iv);
 
     const messageData = {
-      Sender: senderName,
+      Sender: getSenderName(),
       EncryptedContent: encryptedMessage,
       Key: secretKey.toString(CryptoJS.enc.Utf8),
       Iv: iv.toString(CryptoJS.enc.Utf8)
