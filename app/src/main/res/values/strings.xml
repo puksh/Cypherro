@@ -1,6 +1,0 @@
-<resources>
-    <string name="app_name">Cypherro</string>
-    <string name="tab_text_1">Send File</string>
-    <string name="tab_text_2">Tab 2</string>
-    <string name="sendButtonText">Send</string>
-</resources>
