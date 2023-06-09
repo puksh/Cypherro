@@ -2,7 +2,7 @@ $(document).ready(function () {
   showSenderNameModalIfNoSenderName().then(function () {
     // Receive and display new messages
     const connection = new signalR.HubConnectionBuilder()
-      .withUrl("http://localhost:7157/api/")
+      .withUrl(`http://${window.location.hostname}:7157/api/`)
       .configureLogging(signalR.LogLevel.Information)
       .build();
 
@@ -174,7 +174,7 @@ function addEventToSendMessage(secretKey, iv, sendBtn = $("#sendBtn"),) {
     };
     console.log(messageData);
 
-    fetch('http://localhost:7157/api/sendMessage', {
+    fetch(`http://${window.location.hostname}:7157/api/sendMessage`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
