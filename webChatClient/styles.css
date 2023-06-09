@@ -1,285 +1,298 @@
 /* CSS FOR MODAL */
 .modal {
-    display: none;
-    position: fixed;
-    z-index: 9999;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.4);
-  }
-  
-  .modal-content {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    width: 80%;
-    max-width: 400px;
-    margin: 20px auto;
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    font-family: 'Google Sans', sans-serif;
-  }
-  
-  .modal-title {
-    margin-top: 0;
-    margin-bottom: 10px;
-    font-size: 18px;
-    font-weight: bold;
-  }
-  
-  .md-input {
-    width: 100%;
-    padding: 8px 10px;
-    font-size: 14px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-family: 'Google Sans', sans-serif;
-  }
-  
-  .md-button {
-    margin-top: 10px;
-    padding: 8px 16px;
-    font-size: 14px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    background-color: #2196f3;
-    color: #fff;
-    font-family: 'Google Sans', sans-serif;
-    transition-duration: .25s;
-  }
-  
-  .md-button:hover {
-    background-color: #1976d2;
-  }
-  
-  
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 80%;
+  max-width: 400px;
+  margin: 20px auto;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  font-family: 'Google Sans', sans-serif;
+}
+
+.modal-title {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.md-input {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-family: 'Google Sans', sans-serif;
+}
+
+.md-button {
+  margin-top: 10px;
+  padding: 8px 16px;
+  font-size: 14px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: #2196f3;
+  color: #fff;
+  font-family: 'Google Sans', sans-serif;
+  transition-duration: .25s;
+}
+
+.md-button:hover {
+  background-color: #1976d2;
+}
+
+
 /* CSS FOR CHAT */
 
 /* Chat Container */
 #chatContainer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    height: 100vh; /* Adjust the height to fit 40% of the screen vertically */
-    box-sizing: border-box;
-  }
-  
-/* Chat Header */
-  #chatContainer h1 {
-    font-family: "Google Sans", sans-serif;
-    font-size: 24px;
-    font-weight: 500;
-    margin-bottom: 20px;
-  }
-  
-/* Chat Messages */
-  #viewMessages {
-    width: 100%;
-    max-width: 600px;
-    overflow-y: auto;
-    height: 60%; /* Adjust the height to fit 60% of the chat container */
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: flex-end;
-  }
-  
-  #viewMessages p {
-    padding: 9px;
-    border-radius: 15px;
-    margin-bottom: 10px;
-    margin-left: 5px;
-    font-family: "Google Sans", sans-serif;
-  }
-  
-  #viewMessages .userMessage {
-    background-color: #DFF2BF;
-  }
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  height: 100vh;
+  /* Adjust the height to fit 40% of the screen vertically */
+  box-sizing: border-box;
+}
 
-  /* CSS FOR SINGLE MESSAGES */
-  #viewMessages .message {
-    background-color: #F5F5F5;
-    transition-duration: .25s;
-  }
-  #viewMessages .message:hover,
-  #viewMessages .message:focus {
+/* Chat Header */
+#chatContainer h1 {
+  font-family: "Google Sans", sans-serif;
+  font-size: 24px;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+
+/* Chat Messages */
+#viewMessages {
+  width: 100%;
+  max-width: 600px;
+  overflow-y: auto;
+  height: 60%;
+  /* Adjust the height to fit 60% of the chat container */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+}
+
+#viewMessages p {
+  padding: 9px;
+  border-radius: 15px;
+  margin-bottom: 10px;
+  margin-left: 5px;
+  font-family: "Google Sans", sans-serif;
+}
+
+#viewMessages .userMessage {
+  background-color: #DFF2BF;
+}
+
+/* CSS FOR SINGLE MESSAGES */
+#viewMessages .message {
+  background-color: #F5F5F5;
+  transition-duration: .25s;
+}
+
+#viewMessages .message:hover,
+#viewMessages .message:focus {
   outline: none;
   box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
 }
 
-  #viewMessages .message.userMessage {
-    background-color: #DFF2BF;
-    transition-duration: .25s;
-  }
-  #viewMessages .message.userMessage:hover,
-  #viewMessages .message.userMessage:focus {
+#viewMessages .message.userMessage {
+  background-color: #DFF2BF;
+  transition-duration: .25s;
+}
+
+#viewMessages .message.userMessage:hover,
+#viewMessages .message.userMessage:focus {
   outline: none;
   box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
 }
 
 /* Message Input */
-  #inputSend {    
-    flex: 1;
-    width: 100%;
-    max-width: 600px;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 25px;
-    padding: 10px;
-    margin-right: 10px;
-    font-family: "Google Sans", sans-serif;
-    transition-duration: .25s;
-  }
+#inputSend {
+  flex: 1;
+  width: 100%;
+  max-width: 600px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 25px;
+  padding: 10px;
+  margin-right: 10px;
+  font-family: "Google Sans", sans-serif;
+  transition-duration: .25s;
+}
 
-  #inputSend:hover,
-  #inputSend:focus {
+#inputSend:hover,
+#inputSend:focus {
   outline: none;
   border-color: #007bff;
   box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
 }
-  
+
 /* Send Button */
 #input-container {
   display: flex;
   align-items: center;
-  
+
 }
 
-  #sendBtn {
-    padding: 10px 20px;
-    background-color: #4285f4;
-    color: #fff;
-    border: none;
-    border-radius: 25px;
-    font-family: "Google Sans", sans-serif;
-    font-weight: bold;
-    cursor: pointer;
-    transition-duration: .25s;
-  }
-  
-  #sendBtn:hover {
-    background-color: #3367d6;
-  }
-  
-  #sendBtn:focus {
-    outline: none;
-  }
+#sendBtn {
+  padding: 10px 20px;
+  background-color: #4285f4;
+  color: #fff;
+  border: none;
+  border-radius: 25px;
+  font-family: "Google Sans", sans-serif;
+  font-weight: bold;
+  cursor: pointer;
+  transition-duration: .25s;
+}
+
+#sendBtn:hover {
+  background-color: #3367d6;
+}
+
+#sendBtn:focus {
+  outline: none;
+}
 
 
 /* CSS FOR BURGER */
-  #menu__toggle {
-    opacity: 0;
-  }
-  
-  #menu__toggle:checked ~ .menu__btn > span {
-    transform: rotate(45deg);
-  }
-  #menu__toggle:checked ~ .menu__btn > span::before {
-    top: 0;
-    transform: rotate(0);
-  }
-  #menu__toggle:checked ~ .menu__btn > span::after {
-    top: 0;
-    transform: rotate(90deg);
-  }
-  #menu__toggle:checked ~ .menu__box {
-    visibility: visible;
-    left: 0;
-  }
-  
-  .menu__btn {
-    display: flex;
-    align-items: center;
-    position: fixed;
-    top: 20px;
-    left: 20px;
-  
-    width: 26px;
-    height: 26px;
-  
-    cursor: pointer;
-    z-index: 1;
-  }
-  
-  .menu__btn > span,
-  .menu__btn > span::before,
-  .menu__btn > span::after {
-    display: block;
-    position: absolute;
-  
-    width: 100%;
-    height: 2px;
-  
-    background-color: #616161;
-  
-    transition-duration: .25s;
-  }
-  .menu__btn > span::before {
-    content: '';
-    top: -8px;
-  }
-  .menu__btn > span::after {
-    content: '';
-    top: 8px;
-  }
-  
-  .menu__box {
-    display: block;
-    position: fixed;
-    visibility: hidden;
-    top: 0;
-    left: -100%;
-  
-    width: 300px;
-    height: 100%;
-  
-    margin: 0;
-    padding: 80px 0;
-  
-    list-style: none;
-  
-    background-color: #ECEFF1;
-    box-shadow: 1px 0px 6px rgba(0, 0, 0, .2);
-  
-    transition-duration: .25s;
-  }
-  
-  .menu__item {
-    display: block;
-    padding: 12px 24px;
-  
-    color: #333;
-  
-    font-family: 'Google Sans', sans-serif;
-    font-size: 20px;
-    font-weight: 600;
-  
-    text-decoration: none;
-  
-    transition-duration: .25s;
-  }
-  .menu__item:hover {
-    background-color: #CFD8DC;
-  }
+#menu__toggle {
+  opacity: 0;
+}
 
-  /* Cypher key */
+#menu__toggle:checked~.menu__btn>span {
+  transform: rotate(45deg);
+}
 
-  .key-element {
-    position: sticky;
-    bottom: 10px;
-    width: 252px;
-    word-wrap: break-word;
-    overflow-wrap: break-word;  
-    user-select: none !important; /* Prevent text selection */ 
-    -moz-user-select: none !important; /* Prevent text selection in Firefox */
-    cursor: pointer !important; /* Show cursor as pointer */
-  }
+#menu__toggle:checked~.menu__btn>span::before {
+  top: 0;
+  transform: rotate(0);
+}
+
+#menu__toggle:checked~.menu__btn>span::after {
+  top: 0;
+  transform: rotate(90deg);
+}
+
+#menu__toggle:checked~.menu__box {
+  visibility: visible;
+  left: 0;
+}
+
+.menu__btn {
+  display: flex;
+  align-items: center;
+  position: fixed;
+  top: 20px;
+  left: 20px;
+
+  width: 26px;
+  height: 26px;
+
+  cursor: pointer;
+  z-index: 1;
+}
+
+.menu__btn>span,
+.menu__btn>span::before,
+.menu__btn>span::after {
+  display: block;
+  position: absolute;
+
+  width: 100%;
+  height: 2px;
+
+  background-color: #616161;
+
+  transition-duration: .25s;
+}
+
+.menu__btn>span::before {
+  content: '';
+  top: -8px;
+}
+
+.menu__btn>span::after {
+  content: '';
+  top: 8px;
+}
+
+.menu__box {
+  display: block;
+  position: fixed;
+  visibility: hidden;
+  top: 0;
+  left: -100%;
+
+  width: 300px;
+  height: 100%;
+
+  margin: 0;
+  padding: 80px 0;
+
+  list-style: none;
+
+  background-color: #ECEFF1;
+  box-shadow: 1px 0px 6px rgba(0, 0, 0, .2);
+
+  transition-duration: .25s;
+}
+
+.menu__item {
+  display: block;
+  padding: 12px 24px;
+
+  color: #333;
+
+  font-family: 'Google Sans', sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+
+  text-decoration: none;
+
+  transition-duration: .25s;
+}
+
+.menu__item:hover {
+  background-color: #CFD8DC;
+}
+
+/* Cypher key */
+
+.key-element {
+  position: sticky;
+  bottom: 10px;
+  width: 252px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  user-select: none !important;
+  /* Prevent text selection */
+  -moz-user-select: none !important;
+  /* Prevent text selection in Firefox */
+  cursor: pointer !important;
+  /* Show cursor as pointer */
+}

@@ -58,7 +58,7 @@ function initConnectionEvents(connection, senderName = getSenderName()) {
 
 
 
-function showSenderNameModalIfNoSenderName(modal = $("#myModal")) { 
+function showSenderNameModalIfNoSenderName(modal = $("#myModal")) {
   return new Promise(function (resolve, reject) {
     if (getSenderName() === null) {
       const senderNameSetBtn = modal.find('#setSenderNameBtn');
@@ -72,7 +72,7 @@ function showSenderNameModalIfNoSenderName(modal = $("#myModal")) {
         //fade out modal
         modal.fadeOut();
       });
-   } else {
+    } else {
       resolve();
     }
   });
@@ -106,7 +106,7 @@ function removeSenderName() {
 */
 function getSenderName() {
   const sender = localStorage.getItem("sender-name");
-  if (sender === null) { 
+  if (sender === null) {
     console.error("Sender name in localStorage is not set.");
   }
   return sender;
@@ -151,7 +151,7 @@ function encryptMessage(message, key, iv) {
  * @param {JQuery Object} sendBtn
  * 
 */
-function addEventToSendMessage(secretKey, iv, sendBtn = $("#sendBtn"), ) {
+function addEventToSendMessage(secretKey, iv, sendBtn = $("#sendBtn"),) {
   sendBtn.click(function () {
     const inputEl = $('#inputSend')
     const message = inputEl.val();
@@ -175,13 +175,13 @@ function addEventToSendMessage(secretKey, iv, sendBtn = $("#sendBtn"), ) {
     console.log(messageData);
 
     fetch('http://localhost:7157/api/sendMessage', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(messageData)
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(messageData)
     })
-    .then(response => console.log(response))
+      .then(response => console.log(response))
 
     inputEl.val("");
   });
@@ -228,7 +228,7 @@ function displayKeyAndAddEventListener(key) {
 
   $(keyElement).on("click", function () {
     navigator.clipboard.writeText(key);
-    console.log("Copied key to clipboard.: "+ key);
+    console.log("Copied key to clipboard.: " + key);
   });
 
   return keyElement;
