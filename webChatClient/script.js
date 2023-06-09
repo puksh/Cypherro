@@ -152,7 +152,8 @@ function encryptMessage(message, key, iv) {
 */
 function addEventToSendMessage(secretKey, iv, sendBtn = $("#sendBtn"), ) {
   sendBtn.click(function () {
-    const message = $('#inputSend').val();
+    const inputEl = $('#inputSend')
+    const message = inputEl.val();
 
     // Check if the message is empty
     if (message.trim() === "") {
@@ -172,24 +173,16 @@ function addEventToSendMessage(secretKey, iv, sendBtn = $("#sendBtn"), ) {
     };
     console.log(messageData);
 
-    $.ajax({
-      url: 'http://localhost:7157/api/sendMessage',
-      type: 'post',
-      data: JSON.stringify(messageData),
-      headers: {
-        "Content-Type": 'application/json',
-      },
-      dataType: 'json',
-      beforeSend: function (xhr) {
-      },
-      success: function (response) {
-      },
-      error: function (xhr, status, error) {
-        console.error("AJAX request failed:", error);
-      }
-    });
+    fetch('http://localhost:7157/api/sendMessage', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(messageData)
+    })
+    .then(response => console.log(response))
 
-    $('#inputSend').val("");
+    inputEl.val("");
   });
 }
 
