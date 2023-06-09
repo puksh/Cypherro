@@ -52,6 +52,7 @@
     background-color: #2196f3;
     color: #fff;
     font-family: 'Google Sans', sans-serif;
+    transition-duration: .25s;
   }
   
   .md-button:hover {
@@ -93,36 +94,76 @@
   }
   
   #viewMessages p {
-    padding: 10px;
-    border-radius: 10px;
+    padding: 9px;
+    border-radius: 15px;
     margin-bottom: 10px;
+    margin-left: 5px;
     font-family: "Google Sans", sans-serif;
   }
   
   #viewMessages .userMessage {
     background-color: #DFF2BF;
   }
-  
+
+  /* CSS FOR SINGLE MESSAGES */
+  #viewMessages .message {
+    background-color: #F5F5F5;
+    transition-duration: .25s;
+  }
+  #viewMessages .message:hover,
+  #viewMessages .message:focus {
+  outline: none;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+  #viewMessages .message.userMessage {
+    background-color: #DFF2BF;
+    transition-duration: .25s;
+  }
+  #viewMessages .message.userMessage:hover,
+  #viewMessages .message.userMessage:focus {
+  outline: none;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
 /* Message Input */
-  #inputSend {
+  #inputSend {    
+    flex: 1;
     width: 100%;
     max-width: 600px;
     padding: 10px;
     border: 1px solid #ccc;
-    border-radius: 5px;
-    margin-bottom: 10px;
+    border-radius: 25px;
+    padding: 10px;
+    margin-right: 10px;
     font-family: "Google Sans", sans-serif;
+    transition-duration: .25s;
   }
+
+  #inputSend:hover,
+  #inputSend:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
   
 /* Send Button */
+#input-container {
+  display: flex;
+  align-items: center;
+  
+}
+
   #sendBtn {
     padding: 10px 20px;
     background-color: #4285f4;
     color: #fff;
     border: none;
-    border-radius: 5px;
+    border-radius: 25px;
     font-family: "Google Sans", sans-serif;
+    font-weight: bold;
     cursor: pointer;
+    transition-duration: .25s;
   }
   
   #sendBtn:hover {
@@ -132,15 +173,7 @@
   #sendBtn:focus {
     outline: none;
   }
-  
-  #viewMessages .message {
-    background-color: #F5F5F5;
-  }
-  
-  #viewMessages .message.userMessage {
-    background-color: #DFF2BF;
-  }
-  
+
 
 /* CSS FOR BURGER */
   #menu__toggle {

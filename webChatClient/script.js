@@ -44,12 +44,14 @@ function initConnectionEvents(connection, senderName = getSenderName()) {
     const messageElement = $("<p>")
       .addClass("message")
       .addClass(m.Sender === senderName ? "userMessage" : "")
+      .hide()
       .text(`${m.Sender}: ${decryptedMessage}`);
-
-    $('#viewMessages').append(messageElement);
 
     // Apply fade-in effect to the new message
     messageElement.fadeIn(500);
+
+    $('#viewMessages').append(messageElement);
+
   });
 }
 
@@ -220,12 +222,8 @@ function decryptMessage(encryptedMessage, encKey, encIv) {
  * @returns {HTMLElement} keyElement
   */
 function displayKeyAndAddEventListener(key) {
-  const keyElement = document.createElement("div");
-  keyElement.textContent = "Encryption Key: " + key;
-  keyElement.style.position = "fixed";
-  keyElement.style.bottom = "10px";
-  keyElement.style.left = "10px";
-  document.body.appendChild(keyElement);
+  const keyElement = document.getElementById('keyElement');
+  keyElement.textContent = 'Encryption Key: ' + key;
 
 
   $(keyElement).on("click", function () {
