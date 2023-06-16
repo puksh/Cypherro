@@ -1,3 +1,5 @@
+
+
 /* CSS FOR MODAL */
 .modal {
   display: none;
@@ -63,7 +65,7 @@
 /* CSS FOR CHAT */
 
 /* Chat Container */
-#chatContainer {
+#chatContainer, body{
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -72,6 +74,7 @@
   height: 100vh;
   /* Adjust the height to fit 40% of the screen vertically */
   box-sizing: border-box;
+  transition-duration: .25s;
 }
 
 /* Chat Header */
@@ -80,6 +83,7 @@
   font-size: 24px;
   font-weight: 500;
   margin-bottom: 20px;
+  transition-duration: .25s;
 }
 
 /* Chat Messages */
@@ -265,15 +269,11 @@
 .menu__item {
   display: block;
   padding: 12px 24px;
-
   color: #333;
-
   font-family: 'Google Sans', sans-serif;
   font-size: 20px;
   font-weight: 600;
-
   text-decoration: none;
-
   transition-duration: .25s;
 }
 
@@ -295,4 +295,87 @@
   /* Prevent text selection in Firefox */
   cursor: pointer !important;
   /* Show cursor as pointer */
+}
+
+/* Toast CSS */
+.toast-message {
+  font-family: 'Google Sans', sans-serif;
+}
+
+/* CSS For Switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  cursor: pointer;
+  background-color: #ccc;
+  -webkit-transition: 0.4s;
+  transition: 0.4s;
+}
+
+.switch label:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: 0.4s;
+  transition: 0.4s;
+}
+
+.switch input:checked + label {
+  background-color: #2196F3;
+}
+
+.switch input:checked + label:before {
+  transform: translateX(26px);
+}
+
+.switch label:active:before {
+  width: 45px;
+}
+
+.switch input:checked + label:active:before {
+  width: 45px;
+}
+
+.switch label:before {
+  border-radius: 50%;
+}
+
+.switch label:after {
+  position: absolute;
+  content: "";
+  height: 22px;
+  width: 22px;
+  left: 6px;
+  bottom: 6px;
+  background-color: white;
+  -webkit-transition: 0.4s;
+  transition: 0.4s;
+}
+
+.switch input:checked + label:after {
+  background-color: #fff;
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }

@@ -30,9 +30,9 @@ function initConnectionEvents(connection, senderName = getSenderName()) {
   // Start the connection
   // This event is triggered when the connection is established
   connection.start().then(() => {
-    $('#viewMessages').append("<p class='message'>SignalR Connected!</p>");
+    showNotification('SignalR Connected!', 'success');
   }).catch((err) => {
-    return console.error(err.toString());
+    return showNotification(err.toString(), 'error');
   });
 
 
@@ -107,7 +107,7 @@ function removeSenderName() {
 function getSenderName() {
   const sender = localStorage.getItem("sender-name");
   if (sender === null) {
-    console.error("Sender name in localStorage is not set.");
+    showNotification('Sender name in localStorage is not set.', 'error');
   }
   return sender;
 }
@@ -159,7 +159,7 @@ function addEventToSendMessage(secretKey, iv, sendBtn = $("#sendBtn"),) {
     // Check if the message is empty
     if (message.trim() === "") {
       // Display an error message or take appropriate action
-      console.error("Message is empty. Please enter a message.");
+      showNotification('Message is empty. Please enter a message.', 'error');
       return;
     }
 
@@ -228,7 +228,7 @@ function displayKeyAndAddEventListener(key) {
 
   $(keyElement).on("click", function () {
     navigator.clipboard.writeText(key);
-    console.log("Copied key to clipboard.: " + key);
+    showNotification('Copied key to clipboard.', 'success');
   });
 
   return keyElement;
@@ -241,4 +241,22 @@ function addEnterEventListenerToInput(inputEl = $('#inputSend'), sendBtn = $("#s
       sendBtn.click();
     }
   })
+}
+
+/**
+ * Function to display notifications
+ * @param {string} message
+ * @param {string} type
+ * @returns {HTMLElement} toastr[type](message)
+  */
+function showNotification(message, type) {
+  toastr.options = {
+    positionClass: "toast-bottom-right",
+    closeButton: true,
+    timeOut: 3000, // Duration of the notification in milliseconds
+  };
+  if(type === 'error') console.error(message);
+  if(type === 'success') console.log(message);
+
+  toastr[type](message);
 }
