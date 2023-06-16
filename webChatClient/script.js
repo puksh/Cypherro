@@ -2,7 +2,7 @@ $(document).ready(function () {
   showSenderNameModalIfNoSenderName().then(function () {
     // Receive and display new messages
     const connection = new signalR.HubConnectionBuilder()
-      .withUrl(`http://${window.location.hostname}:7157/api/`, {
+      .withUrl(`http://${window.location.hostname}:7157/`, {
         configureLogging: "warn",
         withHandshakeResponseTimeout: 3000000
 
@@ -31,8 +31,9 @@ $(document).ready(function () {
 */
 function initConnectionEvents(connection, senderName = getSenderName()) {
 
-  // Define the public key
-  const publicKey = 'your_public_key_value';
+  // Generate RSA key pair
+  const rsaKey = new JSEncrypt({ default_key_size: 2048 });
+  const publicKey = rsaKey.getPublicKey();
 
   // Save the public key in localStorage
   localStorage.setItem('publicKey', publicKey);
@@ -44,11 +45,13 @@ function initConnectionEvents(connection, senderName = getSenderName()) {
 
     showNotification('SignalR Connected!', 'success');
 
-    showNotification('Performing Handshake...', 'info');
     // Perform handshake by sending the public key to the server
     connection.invoke('PerformHandshake', publicKey)
       .then(() => {
         // Handshake completed, invoke ReceiveHandshake on the server
+
+        showNotification('Performing Handshake...', 'info');
+
         connection.invoke('ReceiveHandshake', handshakeInfo)
           .then(() => {
             showNotification('SignalR Handshake completed!', 'success');
@@ -65,6 +68,12 @@ function initConnectionEvents(connection, senderName = getSenderName()) {
     return showNotification(err.toString(), 'error');
   });
 
+  // Handle receiving the handshake on the client-side
+  connection.on('ReceiveHandshake', (handshakeInfo) => {
+    // Handle the received handshake info
+
+    showNotification('SignalR Handshake completed!', 'success');
+  });
 
   // Receive new message
   // This event is triggered when a new message is received
@@ -91,6 +100,49 @@ function initConnectionEvents(connection, senderName = getSenderName()) {
     // Perform any necessary actions based on the handshake variable
   });
 
+}
+
+/**
+ * Function to send a message
+ * @param {string} secretKey
+ * @param {string} iv
+ * @param {JQuery Object} sendBtn
+ * 
+*/
+function addEventToSendMessage(secretKey, iv, sendBtn = $("#sendBtn"),) {
+  sendBtn.click(function () {
+    const inputEl = $('#inputSend')
+    const message = inputEl.val();
+
+    // Check if the message is empty
+    if (message.trim() === "") {
+      // Display an error message or take appropriate action
+      showNotification('Message is empty. Please enter a message.', 'error');
+      return;
+    }
+
+    // Encrypt the message
+    const encryptedMessage = encryptMessage(message, secretKey, iv);
+
+    const messageData = {
+      Sender: getSenderName(),
+      EncryptedContent: encryptedMessage,
+      Key: secretKey.toString(CryptoJS.enc.Utf8),
+      Iv: iv.toString(CryptoJS.enc.Utf8)
+    };
+    console.log(messageData);
+
+    fetch(`http://${window.location.hostname}:7157/sendMessage`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(messageData)
+    })
+      .then(response => console.log(response))
+
+    inputEl.val("");
+  });
 }
 
 function generateKeys() {
@@ -184,49 +236,6 @@ function encryptMessage(message, key, iv) {
   return encrypted.toString();
 }
 
-/**
- * Function to send a message
- * @param {string} secretKey
- * @param {string} iv
- * @param {JQuery Object} sendBtn
- * 
-*/
-function addEventToSendMessage(secretKey, iv, sendBtn = $("#sendBtn"),) {
-  sendBtn.click(function () {
-    const inputEl = $('#inputSend')
-    const message = inputEl.val();
-
-    // Check if the message is empty
-    if (message.trim() === "") {
-      // Display an error message or take appropriate action
-      showNotification('Message is empty. Please enter a message.', 'error');
-      return;
-    }
-
-    // Encrypt the message
-    const encryptedMessage = encryptMessage(message, secretKey, iv);
-
-    const messageData = {
-      Sender: getSenderName(),
-      EncryptedContent: encryptedMessage,
-      Key: secretKey.toString(CryptoJS.enc.Utf8),
-      Iv: iv.toString(CryptoJS.enc.Utf8)
-    };
-    console.log(messageData);
-
-    fetch(`http://${window.location.hostname}:7157/api/sendMessage`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(messageData)
-    })
-      .then(response => console.log(response))
-
-    inputEl.val("");
-  });
-}
-
 
 
 /**
@@ -247,7 +256,7 @@ function decryptMessage(encryptedMessage, encKey, encIv) {
   // Convert the decrypted WordArray to a UTF-8 string
   const decryptedMessage = decrypted.toString(CryptoJS.enc.Utf8);
 
-  showNotification('Message decrypted! :\n'+ decryptedMessage, 'success');
+  showNotification('Message decrypted! :\n' + decryptedMessage, 'success');
 
   return decryptedMessage;
 }
