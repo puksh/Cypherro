@@ -2,11 +2,7 @@ $(document).ready(function () {
   showSenderNameModalIfNoSenderName().then(function () {
     // Receive and display new messages
     const connection = new signalR.HubConnectionBuilder()
-      .withUrl(`http://${window.location.hostname}:7157/`, {
-        configureLogging: "warn",
-        withHandshakeResponseTimeout: 3000000
-
-      })
+      .withUrl(`http://${window.location.hostname}:7157/`)
       .configureLogging(signalR.LogLevel.Information)
       .build();
 
@@ -29,7 +25,31 @@ $(document).ready(function () {
  * @param {HubConnection} connection
  * @param {string} senderName defaults to the saved sender name in localStorage
 */
-function initConnectionEvents(connection, senderName = getSenderName()) {
+async function initConnectionEvents(connection, senderName = getSenderName()) {
+
+  const response = await fetch(`http://${window.location.hostname}:7157/negotiate`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(`Negotiation failed with status ${response.status}`);
+  }
+
+  const negotiationResponse = await response.json();
+  const { accessToken, connectionId } = negotiationResponse;
+
+
+    // Set the access token for the SignalR connection
+    connection.accessTokenProvider = () => accessToken;
+
+    connection.on('ReceiveHandshake', (handshakeInfo) => {
+      // Handle the received handshake info
+      showNotification('SignalR Handshake completed!', 'success');
+    });
+
 
   // Generate RSA key pair
   const rsaKey = new JSEncrypt({ default_key_size: 2048 });
@@ -42,35 +62,15 @@ function initConnectionEvents(connection, senderName = getSenderName()) {
   // Start the connection
   // This event is triggered when the connection is established
   connection.start().then(() => {
-
     showNotification('SignalR Connected!', 'success');
-
-    // Perform handshake by sending the public key to the server
-    connection.invoke('PerformHandshake', publicKey)
-      .then(() => {
-        // Handshake completed, invoke ReceiveHandshake on the server
-
-        showNotification('Performing Handshake...', 'info');
-
-        connection.invoke('ReceiveHandshake', handshakeInfo)
-          .then(() => {
-            showNotification('SignalR Handshake completed!', 'success');
-          })
-          .catch((error) => {
-            showNotification(`Error invoking ReceiveHandshake: ${error}`, 'error');
-          });
-      })
-      .catch((error) => {
-        showNotification(`Error invoking PerformHandshake: ${error}`, 'error');
-      });
-
   }).catch((err) => {
     return showNotification(err.toString(), 'error');
   });
 
+
   // Handle receiving the handshake on the client-side
-  connection.on('ReceiveHandshake', (handshakeInfo) => {
-    // Handle the received handshake info
+  connection.on('ReceiveHandshake', async (handshakeInfo) => {
+    // Handle the received handshake info asynchronously
 
     showNotification('SignalR Handshake completed!', 'success');
   });
@@ -100,7 +100,11 @@ function initConnectionEvents(connection, senderName = getSenderName()) {
     // Perform any necessary actions based on the handshake variable
   });
 
+
+
 }
+
+
 
 /**
  * Function to send a message

@@ -15,7 +15,7 @@ namespace azureChatty
 
     public static class SendMessage
     {
-
+        
         [FunctionName("SendMessage")]
         public static async Task<IActionResult> Run(
 
@@ -53,7 +53,7 @@ namespace azureChatty
                     new SignalRMessage
                     {
                         Target = "newMessage",
-                        Arguments = new[] { message }
+                        Arguments = new object[] { message }
                     });
 
                 log.LogInformation("Message sent successfully.");
@@ -104,7 +104,7 @@ namespace azureChatty
     }
 
 
-    
+
 }
 public class Message
 {

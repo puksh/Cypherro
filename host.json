@@ -7,5 +7,15 @@
         "excludedTypes": "Request"
       }
     }
+  },
+  "extensions": {
+    "http": {
+      "routePrefix": "",
+      "extensions": {
+        "routes": {
+          "receiveHandshake": "receiveHandshake"
+        }
+      }
+    }
   }
 }
