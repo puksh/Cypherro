@@ -2,7 +2,11 @@ $(document).ready(function () {
   showSenderNameModalIfNoSenderName().then(function () {
     // Receive and display new messages
     const connection = new signalR.HubConnectionBuilder()
-      .withUrl(`http://${window.location.hostname}:7157/api/`)
+      .withUrl(`http://${window.location.hostname}:7157/api/`, {
+        configureLogging: "warn",
+        withHandshakeResponseTimeout: 3000000
+
+      })
       .configureLogging(signalR.LogLevel.Information)
       .build();
 
@@ -27,10 +31,36 @@ $(document).ready(function () {
 */
 function initConnectionEvents(connection, senderName = getSenderName()) {
 
+  // Define the public key
+  const publicKey = 'your_public_key_value';
+
+  // Save the public key in localStorage
+  localStorage.setItem('publicKey', publicKey);
+
+
   // Start the connection
   // This event is triggered when the connection is established
   connection.start().then(() => {
+
     showNotification('SignalR Connected!', 'success');
+
+    showNotification('Performing Handshake...', 'info');
+    // Perform handshake by sending the public key to the server
+    connection.invoke('PerformHandshake', publicKey)
+      .then(() => {
+        // Handshake completed, invoke ReceiveHandshake on the server
+        connection.invoke('ReceiveHandshake', handshakeInfo)
+          .then(() => {
+            showNotification('SignalR Handshake completed!', 'success');
+          })
+          .catch((error) => {
+            showNotification(`Error invoking ReceiveHandshake: ${error}`, 'error');
+          });
+      })
+      .catch((error) => {
+        showNotification(`Error invoking PerformHandshake: ${error}`, 'error');
+      });
+
   }).catch((err) => {
     return showNotification(err.toString(), 'error');
   });
@@ -49,13 +79,23 @@ function initConnectionEvents(connection, senderName = getSenderName()) {
 
     // Apply fade-in effect to the new message
     messageElement.fadeIn(500);
+    showNotification('Message received!', 'info');
 
     $('#viewMessages').append(messageElement);
 
   });
+
+  connection.on('ReceiveHandshake', (handshakeVariable) => {
+    // Handle the received handshakeVariable
+    console.log('Received handshake variable:', handshakeVariable);
+    // Perform any necessary actions based on the handshake variable
+  });
+
 }
 
+function generateKeys() {
 
+}
 
 
 function showSenderNameModalIfNoSenderName(modal = $("#myModal")) {
@@ -197,9 +237,6 @@ function addEventToSendMessage(secretKey, iv, sendBtn = $("#sendBtn"),) {
  * @returns {string} decryptedMessage
  */
 function decryptMessage(encryptedMessage, encKey, encIv) {
-
-  console.log("Decrypting message...");
-
   // Convert the key and iv strings to WordArray objects
   const key = CryptoJS.enc.Utf8.parse(encKey);
   const iv = CryptoJS.enc.Utf8.parse(encIv);
@@ -210,7 +247,7 @@ function decryptMessage(encryptedMessage, encKey, encIv) {
   // Convert the decrypted WordArray to a UTF-8 string
   const decryptedMessage = decrypted.toString(CryptoJS.enc.Utf8);
 
-  console.log("Message decrypted: " + decryptedMessage);
+  showNotification('Message decrypted! :\n'+ decryptedMessage, 'success');
 
   return decryptedMessage;
 }
@@ -255,8 +292,8 @@ function showNotification(message, type) {
     closeButton: true,
     timeOut: 3000, // Duration of the notification in milliseconds
   };
-  if(type === 'error') console.error(message);
-  if(type === 'success') console.log(message);
+  if (type === 'error') console.error(message);
+  if (type === 'success') console.log(message);
 
   toastr[type](message);
 }

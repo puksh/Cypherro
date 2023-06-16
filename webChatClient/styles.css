@@ -301,6 +301,9 @@
 .toast-message {
   font-family: 'Google Sans', sans-serif;
 }
+#toast-container>div {
+  transition: 0.4s;
+}
 
 /* CSS For Switch */
 .switch {
