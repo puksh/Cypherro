@@ -1,4 +1,4 @@
-$(document).ready(function () {
+$(document).ready(async function () {
   showSenderNameModalIfNoSenderName().then(function () {
     // Receive and display new messages
     const connection = new signalR.HubConnectionBuilder()
@@ -7,15 +7,44 @@ $(document).ready(function () {
       .build();
 
 
+    // Generate RSA key pair
+    const rsaKey = new JSEncrypt({ default_key_size: 2048 });
+    const publicKey = rsaKey.getPublicKey();
+
+    // Save the public key in localStorage
+    localStorage.setItem('publicKey', publicKey);
+
     // Generating key
     const key = CryptoJS.enc.Utf8.parse(generateRandomKey());
     const iv = CryptoJS.enc.Utf8.parse(generateRandomKey());
+
+    // Convert the key and iv to strings
+    const keyString = key.toString();
+    const ivString = iv.toString();
+
+    // Save the key and iv to localStorage
+    localStorage.setItem('encryptionKey', keyString);
+    localStorage.setItem('encryptionIV', ivString);
 
     //DEBUG: display key in document
     displayKeyAndAddEventListener(key);
     addEventToSendMessage(key, iv);
     initConnectionEvents(connection, getSenderName());
   });
+
+  // Capture the button click event
+  const sendKeyButton = document.getElementById("sendKeyButton");
+  sendKeyButton.addEventListener("click", function () {
+
+    // Get the senderName, key, and iv from the input elements
+    const senderName = document.getElementById("senderNameInput").value;
+    const key = localStorage.getItem("key");
+    const iv = localStorage.getItem("iv");
+
+    document.getElementById('sendKeyButton').addEventListener('click', searchAndSendKey);
+
+  });
+
 
   addEnterEventListenerToInput();
 });
@@ -42,21 +71,9 @@ async function initConnectionEvents(connection, senderName = getSenderName()) {
   const { accessToken, connectionId } = negotiationResponse;
 
 
-    // Set the access token for the SignalR connection
-    connection.accessTokenProvider = () => accessToken;
+  // Set the access token for the SignalR connection
+  connection.accessTokenProvider = () => accessToken;
 
-    connection.on('ReceiveHandshake', (handshakeInfo) => {
-      // Handle the received handshake info
-      showNotification('SignalR Handshake completed!', 'success');
-    });
-
-
-  // Generate RSA key pair
-  const rsaKey = new JSEncrypt({ default_key_size: 2048 });
-  const publicKey = rsaKey.getPublicKey();
-
-  // Save the public key in localStorage
-  localStorage.setItem('publicKey', publicKey);
 
 
   // Start the connection
@@ -68,18 +85,18 @@ async function initConnectionEvents(connection, senderName = getSenderName()) {
   });
 
 
-  // Handle receiving the handshake on the client-side
-  connection.on('ReceiveHandshake', async (handshakeInfo) => {
-    // Handle the received handshake info asynchronously
-
-    showNotification('SignalR Handshake completed!', 'success');
-  });
 
   // Receive new message
   // This event is triggered when a new message is received
   connection.on('newMessage', (m) => {
     const decryptedMessage = decryptMessage(m.EncryptedContent, m.Key, m.Iv);
-
+    console.log(m.Hash);
+    console.log(createHash(decryptedMessage));
+    verifyHash(decryptedMessage, m.Hash);
+    if (!verifyHash(decryptedMessage, m.Hash)) {
+      showNotification('Message has been tampered with!', 'error');
+      return;
+    }
     const messageElement = $("<p>")
       .addClass("message")
       .addClass(m.Sender === senderName ? "userMessage" : "")
@@ -94,16 +111,33 @@ async function initConnectionEvents(connection, senderName = getSenderName()) {
 
   });
 
-  connection.on('ReceiveHandshake', (handshakeVariable) => {
-    // Handle the received handshakeVariable
-    console.log('Received handshake variable:', handshakeVariable);
-    // Perform any necessary actions based on the handshake variable
-  });
+
 
 
 
 }
 
+ function verifyHash(message, hash) {
+  // Calculate the hash of the message
+  const calculatedHash = createHash(message);
+
+  // Compare the calculated hash with the provided hash
+  return calculatedHash === hash;
+}
+
+
+ function createHash(message) {
+  // Convert the message to a WordArray
+  const messageWordArray = CryptoJS.enc.Utf8.parse(message);
+
+  // Calculate the SHA256 hash
+  const hash = CryptoJS.SHA256(messageWordArray);
+
+  // Convert the hash to a hexadecimal string
+  const hashString = hash.toString(CryptoJS.enc.Hex);
+
+  return hashString;
+}
 
 
 /**
@@ -113,7 +147,7 @@ async function initConnectionEvents(connection, senderName = getSenderName()) {
  * @param {JQuery Object} sendBtn
  * 
 */
-function addEventToSendMessage(secretKey, iv, sendBtn = $("#sendBtn"),) {
+ function addEventToSendMessage(secretKey, iv, sendBtn = $("#sendBtn"),) {
   sendBtn.click(function () {
     const inputEl = $('#inputSend')
     const message = inputEl.val();
@@ -132,7 +166,8 @@ function addEventToSendMessage(secretKey, iv, sendBtn = $("#sendBtn"),) {
       Sender: getSenderName(),
       EncryptedContent: encryptedMessage,
       Key: secretKey.toString(CryptoJS.enc.Utf8),
-      Iv: iv.toString(CryptoJS.enc.Utf8)
+      Iv: iv.toString(CryptoJS.enc.Utf8),
+      Hash: createHash(message).toString(CryptoJS.enc.Utf8)
     };
     console.log(messageData);
 
@@ -149,12 +184,35 @@ function addEventToSendMessage(secretKey, iv, sendBtn = $("#sendBtn"),) {
   });
 }
 
-function generateKeys() {
+const searchAndSendKey = async () => {
+  const senderName = document.getElementById('senderNameInput').value;
 
-}
+  // Construct the request body
+  const requestBody = JSON.stringify({ senderName });
+
+  try {
+    const response = await fetch(`http://${window.location.hostname}:7157/SearchAndSendKey`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: requestBody
+    });
+
+    if (!response.ok) {
+      throw new Error(`Search and Send Key failed with status ${response.status}`);
+    }
+
+    console.log('Key and IV sent successfully!');
+  } catch (error) {
+    console.error('Error sending Key and IV:', error);
+  }
+};
 
 
-function showSenderNameModalIfNoSenderName(modal = $("#myModal")) {
+
+
+ function showSenderNameModalIfNoSenderName(modal = $("#myModal")) {
   return new Promise(function (resolve, reject) {
     if (getSenderName() === null) {
       const senderNameSetBtn = modal.find('#setSenderNameBtn');
@@ -192,7 +250,7 @@ function setSenderName(value) {
 /**
  * remove the sender name from localStorage
 */
-function removeSenderName() {
+async function removeSenderName() {
   localStorage.removeItem("sender-name");
 }
 
@@ -200,7 +258,7 @@ function removeSenderName() {
  *  get the sender name from localStorage
  * @returns {string} senderName
 */
-function getSenderName() {
+ function getSenderName() {
   const sender = localStorage.getItem("sender-name");
   if (sender === null) {
     showNotification('Sender name in localStorage is not set.', 'error');
@@ -214,7 +272,7 @@ function getSenderName() {
  * @returns {string} key
  * 
 */
-function generateRandomKey(length = 16) {
+ function generateRandomKey(length = 16) {
   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   let key = "";
   for (let x = 0; x < length; x++) {
@@ -232,7 +290,7 @@ function generateRandomKey(length = 16) {
  *  
 */
 
-function encryptMessage(message, key, iv) {
+ function encryptMessage(message, key, iv) {
   // Encrypt the message using AES
   const encrypted = CryptoJS.AES.encrypt(message, key, { iv: iv });
 
@@ -249,7 +307,7 @@ function encryptMessage(message, key, iv) {
  * @param {string} encIv 
  * @returns {string} decryptedMessage
  */
-function decryptMessage(encryptedMessage, encKey, encIv) {
+ function decryptMessage(encryptedMessage, encKey, encIv,) {
   // Convert the key and iv strings to WordArray objects
   const key = CryptoJS.enc.Utf8.parse(encKey);
   const iv = CryptoJS.enc.Utf8.parse(encIv);
@@ -271,7 +329,7 @@ function decryptMessage(encryptedMessage, encKey, encIv) {
  * @param {string} key
  * @returns {HTMLElement} keyElement
   */
-function displayKeyAndAddEventListener(key) {
+async function displayKeyAndAddEventListener(key) {
   const keyElement = document.getElementById('keyElement');
   keyElement.textContent = 'Encryption Key: ' + key;
 
@@ -285,7 +343,7 @@ function displayKeyAndAddEventListener(key) {
 }
 
 
-function addEnterEventListenerToInput(inputEl = $('#inputSend'), sendBtn = $("#sendBtn")) {
+async function addEnterEventListenerToInput(inputEl = $('#inputSend'), sendBtn = $("#sendBtn")) {
   inputEl.on('keydown', function (e) {
     if (e.which == 13 || e.keyCode == 13 || e.key === "Enter") {
       sendBtn.click();
@@ -299,7 +357,7 @@ function addEnterEventListenerToInput(inputEl = $('#inputSend'), sendBtn = $("#s
  * @param {string} type
  * @returns {HTMLElement} toastr[type](message)
   */
-function showNotification(message, type) {
+async function showNotification(message, type) {
   toastr.options = {
     positionClass: "toast-bottom-right",
     closeButton: true,

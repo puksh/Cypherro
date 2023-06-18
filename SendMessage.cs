@@ -7,6 +7,8 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.IO;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace azureChatty
@@ -44,7 +46,8 @@ namespace azureChatty
                     Sender = messageR.Sender,
                     EncryptedContent = messageR.EncryptedContent,
                     Key = messageR.Key,
-                    Iv = messageR.Iv
+                    Iv = messageR.Iv,
+                    Hash = messageR.Hash
                 };
                 log.LogInformation("Message created successfully.");
 
@@ -112,4 +115,5 @@ public class Message
     public string EncryptedContent { get; set; }
     public string Key { get; set; }
     public string Iv { get; set; }
+    public string Hash { get; set; }
 }
