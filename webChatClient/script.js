@@ -7,45 +7,35 @@ $(document).ready(async function () {
       .build();
 
 
-    // Generate RSA key pair
-    const rsaKey = new JSEncrypt({ default_key_size: 2048 });
-    const publicKey = rsaKey.getPublicKey();
 
-    // Save the public key in localStorage
-    localStorage.setItem('publicKey', publicKey);
+
+    // Generate RSA key pair
+    const rsaKey = new JSEncrypt({ default_key_size: 512 });
+    const publicKey = rsaKey.getPublicKey();
+    const privateKey = rsaKey.getPrivateKey();
+
+    localStorage.setItem("recipientPublicKey", "");
+
+    // Save the keys in localStorage
+    localStorage.setItem('publicKey', publicKey.toString());
+    localStorage.setItem('privateKey', privateKey.toString());
+    const recipientPublicKey = localStorage.getItem("recipientPublicKey");
 
     // Generating key
     const key = CryptoJS.enc.Utf8.parse(generateRandomKey());
-    const iv = CryptoJS.enc.Utf8.parse(generateRandomKey());
 
-    // Convert the key and iv to strings
+    // Convert the key  to strings
     const keyString = key.toString();
-    const ivString = iv.toString();
 
-    // Save the key and iv to localStorage
+    // Save the key to localStorage
     localStorage.setItem('encryptionKey', keyString);
-    localStorage.setItem('encryptionIV', ivString);
 
     //DEBUG: display key in document
-    displayKeyAndAddEventListener(key);
-    addEventToSendMessage(key, iv);
+    displayKeyAndAddEventListener(publicKey);
+    addEventToSendMessage();
     initConnectionEvents(connection, getSenderName());
+    initializeRecipientPublicKeyField();
   });
-
-  // Capture the button click event
-  const sendKeyButton = document.getElementById("sendKeyButton");
-  sendKeyButton.addEventListener("click", function () {
-
-    // Get the senderName, key, and iv from the input elements
-    const senderName = document.getElementById("senderNameInput").value;
-    const key = localStorage.getItem("key");
-    const iv = localStorage.getItem("iv");
-
-    document.getElementById('sendKeyButton').addEventListener('click', searchAndSendKey);
-
-  });
-
-
   addEnterEventListenerToInput();
 });
 
@@ -89,7 +79,53 @@ async function initConnectionEvents(connection, senderName = getSenderName()) {
   // Receive new message
   // This event is triggered when a new message is received
   connection.on('newMessage', (m) => {
-    const decryptedMessage = decryptMessage(m.EncryptedContent, m.Key, m.Iv);
+
+    if (m.Sender !== senderName) {
+      showNotification('Message received!', 'info');
+    }
+    else {
+      showNotification('Message sent!', 'info');
+      return;
+    }
+    console.log(m);
+
+    // Create a new JSEncrypt object for your private key
+    const selfDecryptor = new JSEncrypt();
+
+    // Set your RSA private key
+    selfDecryptor.setPrivateKey(localStorage.getItem('privateKey'));
+    console.log('privateKey: ' + localStorage.getItem('privateKey'));
+
+    const separator = "~!@~";
+    // Splitting the encrypted key
+    const [encryptedFirstQuarter, encryptedSecondQuarter, encryptedThirdQuarter, encryptedFourthQuarter] = m.Key.split(separator);
+    console.log('encryptedFirstQuarter: ' + encryptedFirstQuarter);
+    
+    // Decrypting each quarter using the recipient's private key
+    
+
+    const decryptedFirstQuarter = selfDecryptor.decrypt(encryptedFirstQuarter);
+    
+    console.log('decryptedFirstQuarter: ' + decryptedFirstQuarter);
+    const decryptedSecondQuarter = selfDecryptor.decrypt(encryptedSecondQuarter);
+    const decryptedThirdQuarter = selfDecryptor.decrypt(encryptedThirdQuarter);
+    const decryptedFourthQuarter = selfDecryptor.decrypt(encryptedFourthQuarter);
+    
+    // Combining the decrypted quarters
+    const decryptedKeySelf = decryptedFirstQuarter + decryptedSecondQuarter + decryptedThirdQuarter + decryptedFourthQuarter;
+    
+    console.log('decryptedKeySelf: ' + decryptedKeySelf);
+    // Create a new JSEncrypt object for recipient's public key
+    const recipientDecryptor = new JSEncrypt();
+
+    // Set the recipient's RSA public key
+    recipientDecryptor.setPublicKey(localStorage.getItem("recipientPublicKey"));
+    console.log('recipientPublicKey: ' + localStorage.getItem("recipientPublicKey"));
+    // Decrypt the self-decrypted key using recipient's public key
+    const decryptedKeyDouble = recipientDecryptor.decrypt(decryptedKeySelf);
+console.log('decryptedKeyDouble: ' + decryptedKeyDouble);
+
+    const decryptedMessage = decryptMessage(m.EncryptedContent, decryptedKeyDouble, m.Iv);
     console.log(m.Hash);
     console.log(createHash(decryptedMessage));
     verifyHash(decryptedMessage, m.Hash);
@@ -99,13 +135,11 @@ async function initConnectionEvents(connection, senderName = getSenderName()) {
     }
     const messageElement = $("<p>")
       .addClass("message")
-      .addClass(m.Sender === senderName ? "userMessage" : "")
       .hide()
       .text(`${m.Sender}: ${decryptedMessage}`);
 
     // Apply fade-in effect to the new message
     messageElement.fadeIn(500);
-    showNotification('Message received!', 'info');
 
     $('#viewMessages').append(messageElement);
 
@@ -117,7 +151,7 @@ async function initConnectionEvents(connection, senderName = getSenderName()) {
 
 }
 
- function verifyHash(message, hash) {
+function verifyHash(message, hash) {
   // Calculate the hash of the message
   const calculatedHash = createHash(message);
 
@@ -126,7 +160,7 @@ async function initConnectionEvents(connection, senderName = getSenderName()) {
 }
 
 
- function createHash(message) {
+function createHash(message) {
   // Convert the message to a WordArray
   const messageWordArray = CryptoJS.enc.Utf8.parse(message);
 
@@ -143,15 +177,24 @@ async function initConnectionEvents(connection, senderName = getSenderName()) {
 /**
  * Function to send a message
  * @param {string} secretKey
- * @param {string} iv
  * @param {JQuery Object} sendBtn
  * 
 */
- function addEventToSendMessage(secretKey, iv, sendBtn = $("#sendBtn"),) {
+function addEventToSendMessage(sendBtn = $("#sendBtn"),) {
   sendBtn.click(function () {
+
+    if(!localStorage.getItem("recipientPublicKey")){
+      showNotification('Please enter the recipient\'s public key', 'error');
+      return;
+    }
     const inputEl = $('#inputSend')
     const message = inputEl.val();
 
+    //secretKey is the public key of the recipient
+
+    const iv = CryptoJS.enc.Utf8.parse(generateRandomKey());
+    // Generating key
+    const keyAES = CryptoJS.enc.Utf8.parse(generateRandomKey());
     // Check if the message is empty
     if (message.trim() === "") {
       // Display an error message or take appropriate action
@@ -159,18 +202,59 @@ async function initConnectionEvents(connection, senderName = getSenderName()) {
       return;
     }
 
+    // Create a new JSEncrypt object for your private key
+    const selfEncryptor = new JSEncrypt();
+
+    // Set your RSA private key
+    selfEncryptor.setPrivateKey(localStorage.getItem('privateKey'));
+    console.log('privateKey: ' + localStorage.getItem('privateKey'));
+    // Encrypt the AES key using your private key
+    const encryptedKeySelf = selfEncryptor.encrypt(keyAES.toString());
+    console.log(encryptedKeySelf);
+    // Divide the encrypted key into four parts with a separator
+    const separator = "~!@~";
+    const quarterLength = Math.ceil(encryptedKeySelf.length / 4);
+    const firstQuarter = encryptedKeySelf.slice(0, quarterLength);
+    console.log('fq:   '+firstQuarter);
+    const secondQuarter = encryptedKeySelf.slice(quarterLength, 2 * quarterLength);
+    const thirdQuarter = encryptedKeySelf.slice(2 * quarterLength, 3 * quarterLength);
+    const fourthQuarter = encryptedKeySelf.slice(3 * quarterLength);
+
+    // Create a new JSEncrypt object for the recipient's public key
+    const recipientEncryptor = new JSEncrypt();
+
+    // Set the recipient's RSA public key
+    recipientEncryptor.setPublicKey(localStorage.getItem("recipientPublicKey"));
+
+console.log('recipientPublicKey: ' + localStorage.getItem("recipientPublicKey"));
+    // Encrypt each quarter of the encrypted key using the recipient's public key
+    const encryptedFirstQuarter = recipientEncryptor.encrypt(firstQuarter);
+    console.log('fqE:   '+encryptedFirstQuarter);
+    const encryptedSecondQuarter = recipientEncryptor.encrypt(secondQuarter);
+    const encryptedThirdQuarter = recipientEncryptor.encrypt(thirdQuarter);
+    const encryptedFourthQuarter = recipientEncryptor.encrypt(fourthQuarter);
+
+    // Combine the separately encrypted quarters with the separator
+    const encryptedKeyDouble = 
+      encryptedFirstQuarter + separator +
+      encryptedSecondQuarter + separator +
+      encryptedThirdQuarter + separator +
+      encryptedFourthQuarter;
+
+    console.log(encryptedKeyDouble);
     // Encrypt the message
-    const encryptedMessage = encryptMessage(message, secretKey, iv);
+    const encryptedMessage = encryptMessage(message, keyAES, iv);
+
 
     const messageData = {
       Sender: getSenderName(),
       EncryptedContent: encryptedMessage,
-      Key: secretKey.toString(CryptoJS.enc.Utf8),
+      Key: encryptedKeyDouble,
       Iv: iv.toString(CryptoJS.enc.Utf8),
       Hash: createHash(message).toString(CryptoJS.enc.Utf8)
     };
     console.log(messageData);
-
+    console.log(localStorage.getItem("publicKey"));
     fetch(`http://${window.location.hostname}:7157/sendMessage`, {
       method: 'POST',
       headers: {
@@ -181,38 +265,39 @@ async function initConnectionEvents(connection, senderName = getSenderName()) {
       .then(response => console.log(response))
 
     inputEl.val("");
+
+    const messageElement = $("<p>")
+      .addClass("message")
+      .addClass("userMessage")
+      .hide()
+      .text(`${getSenderName()}: ${message}`);
+
+    // Apply fade-in effect to the new message
+    messageElement.fadeIn(500);
+
+    $('#viewMessages').append(messageElement);
   });
+
+
+
+
 }
 
-const searchAndSendKey = async () => {
-  const senderName = document.getElementById('senderNameInput').value;
+// Function to decrypt the AES key using RSA private key
+function decryptAESKey(encryptedKey, privateKey) {
+  // Create a new JSEncrypt object
+  const decryptor = new JSEncrypt();
 
-  // Construct the request body
-  const requestBody = JSON.stringify({ senderName });
+  // Set the RSA private key
+  decryptor.setPrivateKey(privateKey);
 
-  try {
-    const response = await fetch(`http://${window.location.hostname}:7157/SearchAndSendKey`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: requestBody
-    });
+  // Decrypt the encrypted key
+  const decryptedKey = decryptor.decrypt(encryptedKey);
 
-    if (!response.ok) {
-      throw new Error(`Search and Send Key failed with status ${response.status}`);
-    }
+  return decryptedKey;
+}
 
-    console.log('Key and IV sent successfully!');
-  } catch (error) {
-    console.error('Error sending Key and IV:', error);
-  }
-};
-
-
-
-
- function showSenderNameModalIfNoSenderName(modal = $("#myModal")) {
+function showSenderNameModalIfNoSenderName(modal = $("#myModal")) {
   return new Promise(function (resolve, reject) {
     if (getSenderName() === null) {
       const senderNameSetBtn = modal.find('#setSenderNameBtn');
@@ -258,7 +343,7 @@ async function removeSenderName() {
  *  get the sender name from localStorage
  * @returns {string} senderName
 */
- function getSenderName() {
+function getSenderName() {
   const sender = localStorage.getItem("sender-name");
   if (sender === null) {
     showNotification('Sender name in localStorage is not set.', 'error');
@@ -272,7 +357,7 @@ async function removeSenderName() {
  * @returns {string} key
  * 
 */
- function generateRandomKey(length = 16) {
+function generateRandomKey(length = 16) {
   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   let key = "";
   for (let x = 0; x < length; x++) {
@@ -290,7 +375,7 @@ async function removeSenderName() {
  *  
 */
 
- function encryptMessage(message, key, iv) {
+function encryptMessage(message, key, iv) {
   // Encrypt the message using AES
   const encrypted = CryptoJS.AES.encrypt(message, key, { iv: iv });
 
@@ -307,7 +392,7 @@ async function removeSenderName() {
  * @param {string} encIv 
  * @returns {string} decryptedMessage
  */
- function decryptMessage(encryptedMessage, encKey, encIv,) {
+function decryptMessage(encryptedMessage, encKey, encIv,) {
   // Convert the key and iv strings to WordArray objects
   const key = CryptoJS.enc.Utf8.parse(encKey);
   const iv = CryptoJS.enc.Utf8.parse(encIv);
@@ -331,13 +416,20 @@ async function removeSenderName() {
   */
 async function displayKeyAndAddEventListener(key) {
   const keyElement = document.getElementById('keyElement');
-  keyElement.textContent = 'Encryption Key: ' + key;
+
+  keyElement.textContent = 'Encryption Key';
+
+  //show the key too
+  //keyElement.textContent = 'Encryption Key: ' + key;
 
 
   $(keyElement).on("click", function () {
     navigator.clipboard.writeText(key);
     showNotification('Copied key to clipboard.', 'success');
   });
+  
+  
+  
 
   return keyElement;
 }
@@ -367,4 +459,58 @@ async function showNotification(message, type) {
   if (type === 'success') console.log(message);
 
   toastr[type](message);
+}
+
+function initializeRecipientPublicKeyField() {
+  // Get the recipient public key field element
+  const recipientPublicKeyField = document.getElementById("recipientPublicKeyField");
+
+  // Function to switch to text field
+  function switchToTextField() {
+    // Create an input element
+    const inputElement = document.createElement("input");
+    inputElement.value = recipientPublicKeyField.innerText;
+    inputElement.placeholder = "Enter the public key";
+    inputElement.className = "public-key-input";
+
+    // Replace the field with the input element
+    recipientPublicKeyField.replaceWith(inputElement);
+
+    // Focus on the input element
+    inputElement.focus();
+
+    // Add event listener to handle Enter key press
+    inputElement.addEventListener("keyup", function (event) {
+      if (event.key === "Enter") {
+        confirmPublicKey(inputElement.value.trim());
+      }
+    });
+  }
+
+  // Function to confirm the public key
+  function confirmPublicKey(key) {
+    if (key !== "") {
+      // Update the field with the confirmed key
+      recipientPublicKeyField.innerText = "Recipient's Public Key";
+      // Save the recipient's public key to local storage
+      localStorage.setItem("recipientPublicKey", key);
+      showNotification("Saved new Recipient's Public Key!", 'success');
+      //console.log("Recipients key" + key);
+
+    } else {
+      // No key entered, revert to the default text
+      recipientPublicKeyField.innerText = "NO Recipient's Public Key";
+    }
+  }
+
+  // Click event handler for the recipient public key field
+  recipientPublicKeyField.addEventListener("click", function () {
+    switchToTextField();
+  });
+
+  // Check if the recipient's public key exists in local storage
+  const storedPublicKey = localStorage.getItem("recipientPublicKey");
+  if (storedPublicKey) {
+    recipientPublicKeyField.innerText = storedPublicKey;
+  }
 }
