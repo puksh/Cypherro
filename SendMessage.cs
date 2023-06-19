@@ -47,7 +47,8 @@ namespace azureChatty
                     EncryptedContent = messageR.EncryptedContent,
                     Key = messageR.Key,
                     Iv = messageR.Iv,
-                    Hash = messageR.Hash
+                    Hash = messageR.Hash,
+                    Signature = messageR.Signature
                 };
                 log.LogInformation("Message created successfully.");
 
@@ -116,4 +117,5 @@ public class Message
     public string Key { get; set; }
     public string Iv { get; set; }
     public string Hash { get; set; }
+    public string Signature { get; set; }
 }
