@@ -19,7 +19,7 @@ $(document).ready(async function () {
     // Save the keys in localStorage
     localStorage.setItem('publicKey', publicKey.toString());
     localStorage.setItem('privateKey', privateKey.toString());
-    const recipientPublicKey = localStorage.getItem("recipientPublicKey");
+    const recipientPublicKey = getRepripientsPublicKey();
 
     // Generating key
     const key = CryptoJS.enc.Utf8.parse(generateRandomKey());
@@ -119,8 +119,8 @@ async function initConnectionEvents(connection, senderName = getSenderName()) {
     const recipientDecryptor = new JSEncrypt();
 
     // Set the recipient's RSA public key
-    recipientDecryptor.setPublicKey(localStorage.getItem("recipientPublicKey"));
-    console.log('recipientPublicKey: ' + localStorage.getItem("recipientPublicKey"));
+    recipientDecryptor.setPublicKey(getRepripientsPublicKey());
+    console.log('recipientPublicKey: ' + getRepripientsPublicKey());
     // Decrypt the self-decrypted key using recipient's public key
     const decryptedKeyDouble = recipientDecryptor.decrypt(decryptedKeySelf);
 console.log('decryptedKeyDouble: ' + decryptedKeyDouble);
@@ -325,6 +325,19 @@ function updateSenderName(modal) {
 }
 
 /**
+ *  get the recipient's public key in localStorage
+ * @returns {string} recipientPublicKey
+*/
+function getRepripientsPublicKey() {
+    const recipientPublicKey = localStorage.getItem("recipientPublicKey");
+    if (recipientPublicKey === null) {
+      showNotification('Recipient\'s public key in localStorage is not set.', 'error');
+    }
+    return recipientPublicKey;
+}
+
+
+/**
  * save the sender name in localStorage
  * @param {string} value
 */
@@ -509,7 +522,7 @@ function initializeRecipientPublicKeyField() {
   });
 
   // Check if the recipient's public key exists in local storage
-  const storedPublicKey = localStorage.getItem("recipientPublicKey");
+  const storedPublicKey = getRepripientsPublicKey();
   if (storedPublicKey) {
     recipientPublicKeyField.innerText = storedPublicKey;
   }
