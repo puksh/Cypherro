@@ -2,6 +2,9 @@
 
 This project is a web-based encrypted chat application that allows users to send and receive secure messages. It features end-to-end encryption, dark mode, and a responsive design.
 
+![image](https://github.com/user-attachments/assets/aa1ac1e3-c500-40f8-888c-a315f72ed0d8)
+
+
 ## Features
 
 - Real-time messaging using SignalR
