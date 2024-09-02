@@ -26,11 +26,9 @@ This project is a web-based encrypted chat application that allows users to send
 ## Project Structure
 
 - `index.html`: Main HTML file containing the structure of the chat application
-- `styles.css`: CSS file for styling the application (not provided in the snippet)
-- `script.js`: JavaScript file for handling application logic (not provided in the snippet)
-- `cypher.html`: Page for cypher-related functionality (not provided in the snippet)
-- `contact.html`: Contact page (not provided in the snippet)
-- `about.html`: About page (not provided in the snippet)
+- `script.js`: JavaScript file for handling application logic
+- `cypher.html`: Page for cypher-related functionality
+
 
 ## Security Features
 
