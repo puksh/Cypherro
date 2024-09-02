@@ -1,4 +1,4 @@
-# Encrypted Chat Application
+# Cypherro - Encrypted Chat Application
 
 This project is a web-based encrypted chat application that allows users to send and receive secure messages. It features end-to-end encryption, dark mode, and a responsive design.
 
